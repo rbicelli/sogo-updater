@@ -12,8 +12,7 @@ cat << EOF
 	Please refer to ./release_builder.conf file
 
 	Command line arguments:	
-		-s|--site		: Site ID
-		-c|--clear		: Clear
+		-s|--site=SITEID	: Site ID
 		-t|--skipthunderbird	: Skip thunderbird Download
 		-h|--help		: Display this help
 	
@@ -38,9 +37,11 @@ function create_dir_and_cd {
 }
 
 function download_file {
-if [ ! -e ./$1  ]; then
+if [ -f $1  ]; then
+	return 0
+fi
 	echo -n "Downloading File $1..."	
-	wget -O $1 $2 > $LOG_FILE 2>&1
+	wget -nv -O $1 $2 > $LOG_FILE 2>&1
 	if [ $? -eq 0 ]; then
 		echo "[OK]"
 		return 0
@@ -48,7 +49,6 @@ if [ ! -e ./$1  ]; then
 		echo "[!!]"
 		return 1
 	fi
-fi
 }
 
 
@@ -64,7 +64,7 @@ function pack_extension {
         fi	
 
 	if [ "${EXTENSIONS_URL_LINUX64[$1]}" != "" ]; then
-                download_file Linux_x64-gcc3/${EXTENSIONS_FILENAME[$1]} ${EXTENSIONS_URL_LINUX64[$1]}
+                download_file Linux_x86_64-gcc3/${EXTENSIONS_FILENAME[$1]} ${EXTENSIONS_URL_LINUX64[$1]}
         fi	
 
 	if [ "${EXTENSIONS_URL_MAC[$1]}" != "" ]; then
@@ -137,8 +137,13 @@ done
 # Config
 ##################################################################
 
-source ./updater_build.conf
 echo "Building release $RELEASE"
+source ./updater_build.conf
+if [ -e "./extensions-$RELEASE.conf" ]; then
+	source ./extensions-$RELEASE.conf
+else
+	source ./extensions.conf
+fi
 if [ "$RELEASE" != "default" ]; then
 	SOGO_FRONTENDS_VERSION_APPEND=.$RELEASE$SOGO_FRONTENDS_VERSION_APPEND
 	EXTENSIONS_VER[1]="${SOGO_FRONTENDS_VERSION}${SOGO_FRONTENDS_VERSION_APPEND}"
@@ -175,9 +180,10 @@ fi
 
 cd $BUILD_PATH
 
-echo "Creating SOGo Integrator..."
+echo "Packing SOGo Integrator..."
 
 create_dir_and_cd sogo_integrator
+
 unzip ../release/sogo-integrator-${SOGO_FRONTENDS_VERSION}.xpi > /dev/null
 rm ../release/sogo-integrator-${SOGO_FRONTENDS_VERSION}.xpi
 
@@ -192,7 +198,7 @@ sed -i -f ../../extensions.sed ../extensions.rdf.work
 sed -i "s|$SOGO_FRONTENDS_VERSION|${SOGO_FRONTENDS_VERSION}${SOGO_FRONTENDS_VERSION_APPEND}|g" ./install.rdf
 
 
-#M oving Files
+#Moving Files
 cp -f ../extensions.rdf.work chrome/content/extensions.rdf
 
 # Zipping
@@ -212,13 +218,10 @@ sed -i "s|SOGO_FE_VERSION|$SOGO_FRONTENDS_VERSION$|g" ./php_vars.work
 sed -i -f ../php_vars.sed ./php_vars.work
 
 cp ./php_vars.work ./release/updater_config.php
-mv ../../$RELEASE ../../$RELEASE.bak
-rm -rf ../../$RELEASE
-cp -rf ./release ../../$RELEASE
 
-#delete_dir ../$TB_VERSION
+rm -rf $SCRIPT_PATH/../$RELEASE
+cp -rf ./release $SCRIPT_PATH/../$RELEASE
 
 cd $SCRIPT_PATH
-#delete_dir ./build
 
 echo "Done."

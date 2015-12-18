@@ -10,6 +10,4 @@ $applications
                 <em:maxVersion>TB_MAX_VERSION</em:maxVersion>" );
 
 $tb_version="TB_VERSION";
-$sogo_int_version="SOGO_INT_VERSION";
-$sogo_fe_version="SOGO_FE_VERSION";
 ?>

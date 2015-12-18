@@ -1,4 +1,4 @@
-# sogo-updater
+# SOGo-updater
 
 This program is a set of scripts aimed to automate the update of SOGo Integrator Plugin
 for thunderbird in an enterprise environment.
@@ -9,7 +9,7 @@ The program is essentially composed of two parts:
 
 2. The updater (update.php) that talks with SOGo Integrator Plugin for Extensions Update
 
-# release_builder
+# release-builder
 
 Release Builder does follwing tasks:
 
@@ -17,4 +17,8 @@ Release Builder does follwing tasks:
 2. Customizes SOGo-Integrator Extension: changes UpdateUrl, creates the extensions database
 3. Downloads other extensions to be shipped
 
-For usage refer to command help and look in configuration file updater_build.conf.
+# Getting started
+Download and unpack the zip in a directory served by a web server.
+
+Take a look to command-line parameters by calling updater_build.sh -h
+Take a look in configuration files updater_build.conf and extensions-test.conf
